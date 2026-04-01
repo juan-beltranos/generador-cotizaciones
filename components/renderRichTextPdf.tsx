@@ -1,8 +1,12 @@
 import React from "react";
 import { Text, View, StyleSheet } from "@react-pdf/renderer";
-import { parseDocument, Element, DataNode, Node } from "htmlparser2";
+import { parseDocument } from "htmlparser2";
+import type { Element, DataNode, Node } from "domhandler";
 
 const styles = StyleSheet.create({
+    wrapper: {
+        marginTop: 4,
+    },
     paragraph: {
         fontSize: 10,
         color: "#52525b",
@@ -11,7 +15,7 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     strong: {
-        fontWeight: 700,
+        fontWeight: "bold",
         color: "#18181b",
     },
     em: {
@@ -19,21 +23,21 @@ const styles = StyleSheet.create({
     },
     h1: {
         fontSize: 14,
-        fontWeight: 700,
+        fontWeight: "bold",
         color: "#18181b",
         marginTop: 4,
         marginBottom: 4,
     },
     h2: {
         fontSize: 12,
-        fontWeight: 700,
+        fontWeight: "bold",
         color: "#18181b",
         marginTop: 4,
         marginBottom: 4,
     },
     h3: {
         fontSize: 11,
-        fontWeight: 700,
+        fontWeight: "bold",
         color: "#18181b",
         marginTop: 3,
         marginBottom: 3,
@@ -45,7 +49,7 @@ const styles = StyleSheet.create({
     listItemRow: {
         flexDirection: "row",
         alignItems: "flex-start",
-        marginBottom: 2,
+        marginBottom: 3,
         paddingRight: 8,
     },
     bullet: {
@@ -54,8 +58,10 @@ const styles = StyleSheet.create({
         color: "#52525b",
         lineHeight: 1.45,
     },
-    listItemContent: {
+    listItemContentWrap: {
         flex: 1,
+    },
+    listItemContent: {
         fontSize: 10,
         color: "#52525b",
         lineHeight: 1.45,
@@ -68,16 +74,10 @@ export function renderRichTextPdf(html?: string) {
     const doc = parseDocument(html);
     const bodyNodes = doc.children ?? [];
 
-    return (
-        <View>
-            {bodyNodes.map((node, index) => (
-                <React.Fragment key={index}>{renderNode(node, `${index}`)}</React.Fragment>
-            ))}
-        </View>
-    );
+    return <View style={styles.wrapper}>{renderChildren(bodyNodes, "root")}</View>;
 }
 
-function renderChildren(nodes: Node[] = [], path: string) {
+function renderChildren(nodes: Node[] = [], path: string): React.ReactNode[] {
     return nodes.map((child, index) => (
         <React.Fragment key={`${path}-${index}`}>
             {renderNode(child, `${path}-${index}`)}
@@ -104,7 +104,9 @@ function renderNode(node: Node, path: string): React.ReactNode {
     if (node.type !== "tag") return null;
 
     const el = node as Element;
-    const name = el.name.toLowerCase();
+    const name = el.name?.toLowerCase();
+
+    if (!name) return null;
 
     if (name === "p") {
         return <Text style={styles.paragraph}>{renderInlineChildren(el.children, path)}</Text>;
@@ -124,7 +126,7 @@ function renderNode(node: Node, path: string): React.ReactNode {
 
     if (name === "ul") {
         const items = el.children.filter(
-            (child) => child.type === "tag" && (child as Element).name === "li"
+            (child) => child.type === "tag" && (child as Element).name?.toLowerCase() === "li"
         ) as Element[];
 
         return (
@@ -132,7 +134,7 @@ function renderNode(node: Node, path: string): React.ReactNode {
                 {items.map((item, i) => (
                     <View key={`${path}-ul-${i}`} style={styles.listItemRow}>
                         <Text style={styles.bullet}>• </Text>
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.listItemContentWrap}>
                             {renderListItem(item, `${path}-ul-${i}`)}
                         </View>
                     </View>
@@ -143,7 +145,7 @@ function renderNode(node: Node, path: string): React.ReactNode {
 
     if (name === "ol") {
         const items = el.children.filter(
-            (child) => child.type === "tag" && (child as Element).name === "li"
+            (child) => child.type === "tag" && (child as Element).name?.toLowerCase() === "li"
         ) as Element[];
 
         return (
@@ -151,7 +153,7 @@ function renderNode(node: Node, path: string): React.ReactNode {
                 {items.map((item, i) => (
                     <View key={`${path}-ol-${i}`} style={styles.listItemRow}>
                         <Text style={styles.bullet}>{`${i + 1}. `}</Text>
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.listItemContentWrap}>
                             {renderListItem(item, `${path}-ol-${i}`)}
                         </View>
                     </View>
@@ -172,7 +174,7 @@ function renderNode(node: Node, path: string): React.ReactNode {
         return (
             <View style={styles.listItemRow}>
                 <Text style={styles.bullet}>• </Text>
-                <View style={{ flex: 1 }}>{renderListItem(el, path)}</View>
+                <View style={styles.listItemContentWrap}>{renderListItem(el, path)}</View>
             </View>
         );
     }
@@ -182,7 +184,11 @@ function renderNode(node: Node, path: string): React.ReactNode {
 
 function renderListItem(el: Element, path: string) {
     const blockChildren = el.children.filter(
-        (child) => child.type === "tag" && ["ul", "ol", "p", "div"].includes((child as Element).name)
+        (child) =>
+            child.type === "tag" &&
+            ["ul", "ol", "p", "div", "h1", "h2", "h3"].includes(
+                ((child as Element).name || "").toLowerCase()
+            )
     );
 
     if (blockChildren.length > 0) {
@@ -205,11 +211,7 @@ function renderListItem(el: Element, path: string) {
         );
     }
 
-    return (
-        <Text style={styles.listItemContent}>
-            {renderInlineChildren(el.children, path)}
-        </Text>
-    );
+    return <Text style={styles.listItemContent}>{renderInlineChildren(el.children, path)}</Text>;
 }
 
 function renderInlineNode(node: Node, path: string): React.ReactNode {
@@ -221,7 +223,9 @@ function renderInlineNode(node: Node, path: string): React.ReactNode {
     if (node.type !== "tag") return null;
 
     const el = node as Element;
-    const name = el.name.toLowerCase();
+    const name = el.name?.toLowerCase();
+
+    if (!name) return null;
 
     if (name === "strong" || name === "b") {
         return <Text style={styles.strong}>{renderInlineChildren(el.children, path)}</Text>;

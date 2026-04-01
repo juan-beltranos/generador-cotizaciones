@@ -8,23 +8,62 @@ import { formatMoney } from "@/lib/format";
 import { renderRichTextPdf } from "../renderRichTextPdf";
 
 const styles = StyleSheet.create({
-    page: { padding: 28, fontSize: 11, fontFamily: "Helvetica" },
-    headerRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
-    h1: { fontSize: 16, fontWeight: "bold" },
-    muted: { color: "#52525b" },
-    card: { border: "1px solid #e4e4e7", borderRadius: 10, padding: 12, marginTop: 10 },
-    sectionTitle: { fontSize: 12, fontWeight: "bold", marginBottom: 8 },
-    tableHeader: { flexDirection: "row", borderBottom: "1px solid #e4e4e7", paddingBottom: 6, marginTop: 8 },
+    page: {
+        padding: 28,
+        fontSize: 11,
+        fontFamily: "Helvetica",
+    },
+    headerRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 14,
+    },
+    h1: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
+    muted: {
+        color: "#52525b",
+    },
+    card: {
+        border: "1px solid #e4e4e7",
+        borderRadius: 10,
+        padding: 12,
+        marginTop: 10,
+    },
+    sectionTitle: {
+        fontSize: 12,
+        fontWeight: "bold",
+        marginBottom: 8,
+    },
+    tableHeader: {
+        flexDirection: "row",
+        borderBottom: "1px solid #e4e4e7",
+        paddingBottom: 6,
+        marginTop: 8,
+    },
     row: {
         flexDirection: "row",
         paddingVertical: 7,
         borderBottom: "1px solid #f4f4f5",
         alignItems: "flex-start",
     },
-    colLeft: { width: "75%" },
-    colRight: { width: "25%", textAlign: "right" as const },
-    bold: { fontWeight: "bold" },
-    footer: { marginTop: 18, fontSize: 9, color: "#71717a" }
+    colLeft: {
+        width: "75%",
+        paddingRight: 10,
+    },
+    colRight: {
+        width: "25%",
+        textAlign: "right",
+    },
+    bold: {
+        fontWeight: "bold",
+    },
+    footer: {
+        marginTop: 18,
+        fontSize: 9,
+        color: "#71717a",
+    },
 });
 
 export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
@@ -32,7 +71,7 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
         services: draft.services,
         discountMode: draft.settings.discountMode,
         discountValue: draft.settings.discountValue,
-        taxPercent: draft.settings.taxPercent
+        taxPercent: draft.settings.taxPercent,
     });
 
     return (
@@ -66,21 +105,32 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
                         <Text style={[styles.colRight, styles.bold]}>Precio</Text>
                     </View>
 
-                    {draft.services.map((s) => (
-                        <View key={s.id} style={styles.row}>
+                    {draft.services.length === 0 ? (
+                        <View style={styles.row}>
                             <View style={styles.colLeft}>
-                                <Text style={styles.bold}>{s.name || "Servicio"}</Text>
-                                {s.description ? (
-                                    <View style={{ marginTop: 4 }}>
-                                        {renderRichTextPdf(s.description)}
-                                    </View>
-                                ) : null}
+                                <Text style={styles.muted}>(Agrega al menos un servicio)</Text>
                             </View>
-                            <Text style={[styles.colRight, styles.bold, { marginTop: 1 }]}>
-                                {formatMoney(Number(s.price) || 0, draft.settings.currency)}
-                            </Text>
+                            <Text style={styles.colRight}></Text>
                         </View>
-                    ))}
+                    ) : (
+                        draft.services.map((s) => (
+                            <View key={s.id} style={styles.row}>
+                                <View style={styles.colLeft}>
+                                    <Text style={styles.bold}>{s.name || "Servicio"}</Text>
+
+                                    {s.description ? (
+                                        <View style={{ marginTop: 4 }}>
+                                            {renderRichTextPdf(s.description)}
+                                        </View>
+                                    ) : null}
+                                </View>
+
+                                <Text style={[styles.colRight, styles.bold, { marginTop: 1 }]}>
+                                    {formatMoney(Number(s.price) || 0, draft.settings.currency)}
+                                </Text>
+                            </View>
+                        ))
+                    )}
                 </View>
 
                 <View style={{ marginTop: 14, flexDirection: "row", gap: 10 }}>
@@ -88,7 +138,10 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
                         <Text style={styles.sectionTitle}>Resumen</Text>
                         <Row label="Subtotal" value={formatMoney(t.sub, draft.settings.currency)} />
                         <Row label="Descuento" value={`- ${formatMoney(t.disc, draft.settings.currency)}`} />
-                        <Row label={`Impuesto (${draft.settings.taxPercent || 0}%)`} value={formatMoney(t.tax, draft.settings.currency)} />
+                        <Row
+                            label={`Impuesto (${draft.settings.taxPercent || 0}%)`}
+                            value={formatMoney(t.tax, draft.settings.currency)}
+                        />
                         <View style={{ marginTop: 8, borderTop: "1px solid #e4e4e7", paddingTop: 8 }}>
                             <Row label="Total a pagar" value={formatMoney(t.total, draft.settings.currency)} strong />
                         </View>
