@@ -5,6 +5,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { QuoteDraft } from "@/lib/types";
 import { totals } from "@/lib/calc";
 import { formatMoney } from "@/lib/format";
+import { renderRichTextPdf } from "../renderRichTextPdf";
 
 const styles = StyleSheet.create({
     page: { padding: 28, fontSize: 11, fontFamily: "Helvetica" },
@@ -14,7 +15,12 @@ const styles = StyleSheet.create({
     card: { border: "1px solid #e4e4e7", borderRadius: 10, padding: 12, marginTop: 10 },
     sectionTitle: { fontSize: 12, fontWeight: "bold", marginBottom: 8 },
     tableHeader: { flexDirection: "row", borderBottom: "1px solid #e4e4e7", paddingBottom: 6, marginTop: 8 },
-    row: { flexDirection: "row", paddingVertical: 7, borderBottom: "1px solid #f4f4f5" },
+    row: {
+        flexDirection: "row",
+        paddingVertical: 7,
+        borderBottom: "1px solid #f4f4f5",
+        alignItems: "flex-start",
+    },
     colLeft: { width: "75%" },
     colRight: { width: "25%", textAlign: "right" as const },
     bold: { fontWeight: "bold" },
@@ -64,9 +70,13 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
                         <View key={s.id} style={styles.row}>
                             <View style={styles.colLeft}>
                                 <Text style={styles.bold}>{s.name || "Servicio"}</Text>
-                                {s.description ? <Text style={styles.muted}>{s.description}</Text> : null}
+                                {s.description ? (
+                                    <View style={{ marginTop: 4 }}>
+                                        {renderRichTextPdf(s.description)}
+                                    </View>
+                                ) : null}
                             </View>
-                            <Text style={[styles.colRight, styles.bold]}>
+                            <Text style={[styles.colRight, styles.bold, { marginTop: 1 }]}>
                                 {formatMoney(Number(s.price) || 0, draft.settings.currency)}
                             </Text>
                         </View>

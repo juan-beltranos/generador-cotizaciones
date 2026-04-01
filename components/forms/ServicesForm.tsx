@@ -3,6 +3,7 @@
 import type { Currency, ServiceItem } from "@/lib/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { formatMoney } from "@/lib/format";
 
 export function ServicesForm(props: {
@@ -14,7 +15,7 @@ export function ServicesForm(props: {
         const id = crypto.randomUUID();
         props.onChange([
             ...props.value,
-            { id, name: "", description: "", price: 0 }
+            { id, name: "", description: "", price: 0 },
         ]);
     };
 
@@ -53,12 +54,14 @@ export function ServicesForm(props: {
                                 value={s.name}
                                 onChange={(e) => update(s.id, { name: e.target.value })}
                             />
-                            <Input
-                                label="Descripción corta (opcional)"
-                                placeholder="Ej: 3 propuestas + 2 rondas de ajustes"
+
+                            <RichTextEditor
+                                label="Descripción detallada (opcional)"
+                                placeholder="Ej: incluye bullets, numeración, negrillas, entregables, tiempos, etc."
                                 value={s.description ?? ""}
-                                onChange={(e) => update(s.id, { description: e.target.value })}
+                                onChange={(html) => update(s.id, { description: html })}
                             />
+
                             <Input
                                 label="Precio"
                                 type="number"
@@ -68,8 +71,12 @@ export function ServicesForm(props: {
                                 value={String(s.price ?? 0)}
                                 onChange={(e) => update(s.id, { price: Number(e.target.value) })}
                             />
+
                             <div className="text-xs text-zinc-500">
-                                Vista rápida: <span className="font-semibold">{formatMoney(Number(s.price) || 0, props.currency)}</span>
+                                Vista rápida:{" "}
+                                <span className="font-semibold">
+                                    {formatMoney(Number(s.price) || 0, props.currency)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -82,7 +89,8 @@ export function ServicesForm(props: {
                 </Button>
 
                 <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm">
-                    Total de servicios: <span className="font-bold">{formatMoney(totalLive, props.currency)}</span>
+                    Total de servicios:{" "}
+                    <span className="font-bold">{formatMoney(totalLive, props.currency)}</span>
                 </div>
             </div>
         </div>

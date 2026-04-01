@@ -111,7 +111,12 @@ export function QuotePreview(props: {
                                             <tr key={s.id} className="border-t border-zinc-200">
                                                 <td className="px-4 py-3">
                                                     <div className="font-semibold">{s.name || "Servicio"}</div>
-                                                    {s.description ? <div className="text-zinc-600">{s.description}</div> : null}
+                                                    {s.description ? (
+                                                        <div
+                                                            className="quote-richtext mt-1 text-zinc-600"
+                                                            dangerouslySetInnerHTML={{ __html: s.description }}
+                                                        />
+                                                    ) : null}
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-semibold">
                                                     {formatMoney(Number(s.price) || 0, draft.settings.currency)}
