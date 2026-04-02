@@ -6,6 +6,7 @@ export type Emitter = {
     name: string;
     contact: string; // email o WhatsApp
     location?: string;
+    logo?: string;
 };
 
 export type Client = {

@@ -68,12 +68,30 @@ export function QuotePreview(props: {
             >
                 <div className="p-6 sm:p-8">
                     <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <div className="text-xl font-extrabold">{draft.emitter.name || "Tu nombre / marca"}</div>
-                            <div className="mt-1 text-sm text-zinc-600">{draft.emitter.contact || "Tu contacto"}</div>
-                            {draft.emitter.location ? (
-                                <div className="text-sm text-zinc-600">{draft.emitter.location}</div>
-                            ) : null}
+                        <div className="flex items-center gap-3">
+                            {draft.emitter.logo && (
+                                <img
+                                    src={draft.emitter.logo}
+                                    alt={draft.emitter.name}
+                                    className="h-12 w-12 object-contain rounded"
+                                />
+                            )}
+
+                            <div>
+                                <div className="text-xl font-extrabold">
+                                    {draft.emitter.name || "Tu nombre / marca"}
+                                </div>
+
+                                <div className="text-sm text-zinc-600">
+                                    {draft.emitter.contact || "Tu contacto"}
+                                </div>
+
+                                {draft.emitter.location && (
+                                    <div className="text-sm text-zinc-600">
+                                        {draft.emitter.location}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="sm:text-right">

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import type { QuoteDraft } from "@/lib/types";
 import { totals } from "@/lib/calc";
 import { formatMoney } from "@/lib/format";
@@ -21,6 +20,7 @@ const styles = StyleSheet.create({
     h1: {
         fontSize: 16,
         fontWeight: "bold",
+        marginTop: 2,
     },
     muted: {
         color: "#52525b",
@@ -64,6 +64,12 @@ const styles = StyleSheet.create({
         fontSize: 9,
         color: "#71717a",
     },
+    logo: {
+        width: 100,
+        height: 55,
+        marginBottom: 6,
+        objectFit: "contain",
+    },
 });
 
 export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
@@ -78,10 +84,22 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
         <Document>
             <Page size="A4" style={styles.page}>
                 <View style={styles.headerRow}>
-                    <View>
-                        <Text style={styles.h1}>{draft.emitter.name || "Tu nombre / marca"}</Text>
-                        <Text style={styles.muted}>{draft.emitter.contact || "Tu contacto"}</Text>
-                        {draft.emitter.location ? <Text style={styles.muted}>{draft.emitter.location}</Text> : null}
+                    <View style={{ maxWidth: "60%" }}>
+                        {draft.emitter.logo ? (
+                            <Image src={draft.emitter.logo} style={styles.logo} />
+                        ) : null}
+
+                        <Text style={styles.h1}>
+                            {draft.emitter.name || "Tu nombre / marca"}
+                        </Text>
+
+                        <Text style={styles.muted}>
+                            {draft.emitter.contact || "Tu contacto"}
+                        </Text>
+
+                        {draft.emitter.location ? (
+                            <Text style={styles.muted}>{draft.emitter.location}</Text>
+                        ) : null}
                     </View>
 
                     <View style={{ alignItems: "flex-end" }}>
@@ -117,7 +135,6 @@ export function QuotePdfDocument({ draft }: { draft: QuoteDraft }) {
                             <View key={s.id} style={styles.row}>
                                 <View style={styles.colLeft}>
                                     <Text style={styles.bold}>{s.name || "Servicio"}</Text>
-
                                     {s.description ? (
                                         <View style={{ marginTop: 4 }}>
                                             {renderRichTextPdf(s.description)}
